@@ -2,153 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 <title>Harshu’s Valentine Quest 💘</title>
 
 <style>
-/* ================= ENVELOPE SCREEN ================= */
-#envelopeScreen{
-  position:fixed;
-  inset:0;
-  display:grid;
-  place-items:center;
-  background:rgba(0,0,0,0.25); /* darker = clarity */
-  backdrop-filter:blur(4px);  /* lighter blur */
-  z-index:1000;
-}
-
-/* ================= ENVELOPE ================= */
-.envelope{
-  width:320px;
-  height:210px;
-  position:relative;
-  cursor:pointer;
-  transform:perspective(900px) rotateX(6deg);
-  transition:transform .6s ease;
-}
-
-/* BODY */
-.env-body{
-  position:absolute;
-  inset:0;
-  background:linear-gradient(135deg,#ffd1e8,#ff9acb);
-  border-radius:14px;
-  box-shadow:
-    0 20px 40px rgba(0,0,0,.35),
-    inset 0 0 0 2px rgba(255,255,255,.6);
-  z-index:1;
-}
-
-/* FLAP */
-.env-flap{
-  position:absolute;
-  top:0;
-  left:0;
-  right:0;
-  height:55%;
-  background:linear-gradient(135deg,#ff4d6d,#ff2d55);
-  clip-path:polygon(0 0,100% 0,50% 100%);
-  transform-origin:top;
-  transition:transform 1s cubic-bezier(.4,.2,.2,1);
-  z-index:3;
-}
-
-/* LETTER */
-.letter{
-  position:absolute;
-  left:14px;
-  right:14px;
-  bottom:14px;
-  height:65%;
-  background:white;
-  border-radius:10px;
-  display:grid;
-  place-items:center;
-  padding:18px;
-  text-align:center;
-  box-shadow:0 10px 20px rgba(0,0,0,.25);
-  transition:transform 1s ease, opacity .8s ease;
-  z-index:2;
-}
-
-.letter p{
-  font-size:17px;
-  color:#5c1737;
-  line-height:1.4;
-}
-
-.letter span{
-  display:block;
-  margin-top:10px;
-  font-size:13px;
-  color:#ff4d6d;
-  font-weight:600;
-}
-
-/* OPEN STATE */
-.envelope.open{
-  transform:perspective(900px) rotateX(0deg);
-}
-
-.envelope.open .env-flap{
-  transform:rotateX(-180deg);
-}
-
-.envelope.open .letter{
-  transform:translateY(-140%);
-  opacity:0;
-}
-
-.flap{
-  position:absolute;
-  top:0;
-  left:0;
-  right:0;
-  height:50%;
-  background:linear-gradient(135deg,#ff8fb5,#ff4d6d);
-  transform-origin:top;
-  transform:rotateX(0deg);
-  transition:transform 1s ease;
-  z-index:3;
-}
-
-.letter{
-  position:absolute;
-  inset:20px;
-  background:#fff;
-  border-radius:6px;
-  display:grid;
-  place-items:center;
-  text-align:center;
-  padding:16px;
-  z-index:2;
-  transition:transform 1s ease, opacity 0.8s ease;
-}
-
-.letter p{
-  font-size:16px;
-  color:#5c1737;
-  line-height:1.4;
-}
-
-.letter span{
-  display:block;
-  margin-top:8px;
-  font-size:13px;
-  opacity:0.7;
-}
-
-/* OPEN STATE */
-.envelope.open .flap{
-  transform:rotateX(-180deg);
-}
-
-.envelope.open .letter{
-  transform:translateY(-120%);
-  opacity:0;
-}
-
-
 :root{
   --bg1:#ffd1e8;
   --bg2:#ff8fb5;
@@ -160,7 +17,6 @@
 
 *{box-sizing:border-box}
 
-/* ====== BODY (rotated image + visible overlay) ====== */
 body{
   margin:0;
   min-height:100vh;
@@ -172,231 +28,309 @@ body{
   position:relative;
 }
 
-/* Background image layer (fix EXIF by rotating) */
+/* ================= BACKGROUND ================= */
+/* IMPORTANT: Replace the URL below with your local file 'IMG_8642.jpg' 
+   when you are ready to send it! 
+*/
 body::before{
   content:"";
   position:fixed;
-  inset:-12%;
+  inset:-10%;
+  /* Placeholder image used for testing. Change back to 'IMG_8642.jpg' */
   background:url("IMG_8642.jpg") center/cover no-repeat;
-  transform:rotate(180deg) scale(1.05);
-  filter:blur(2px) brightness(0.95) saturate(1.05);
+  /* If your original photo was upside down, keep rotate(180deg). If not, remove it. */
+  transform: rotate(180deg);
+  /*transform:rotate(0deg) scale(1.05); */
+  filter:blur(3px) brightness(0.9) saturate(1.1);
   z-index:-2;
   transition:transform 1.2s ease;
 }
 
-/* Softer gradient tint so image is visible */
 body::after{
   content:"";
   position:fixed;
   inset:0;
   background:linear-gradient(
     135deg,
-    rgba(255,209,232,0.45),
-    rgba(255,143,181,0.45),
-    rgba(255,77,109,0.45)
+    rgba(255,209,232,0.4),
+    rgba(255,143,181,0.4),
+    rgba(255,77,109,0.4)
   );
   z-index:-1;
 }
 
-/* YES click background zoom */
 body.yes-bg::before{
-  transform:rotate(180deg) scale(1.15);
+  transform:rotate(0deg) scale(1.15); /* Match rotation above */
 }
 
-/* ====== CARD ====== */
-.card{
-  width:min(92vw,560px);
-  background:rgba(255,245,251,0.78);
-  backdrop-filter:blur(14px);
-  -webkit-backdrop-filter:blur(14px);
-  padding:28px;
-  border-radius:26px;
-  text-align:center;
-  box-shadow:0 22px 50px rgba(255,0,102,.35);
-  animation:pop .6s ease;
+/* ================= ENVELOPE SCREEN ================= */
+#envelopeScreen{
+  position:fixed;
+  inset:0;
+  display:grid;
+  place-items:center;
+  background:rgba(0,0,0,0.4);
+  backdrop-filter:blur(5px);
+  z-index:1000;
+  transition:opacity 0.6s ease;
+}
+
+.envelope{
+  width:300px;
+  height:200px;
   position:relative;
+  cursor:pointer;
+  transform:perspective(1000px);
+  transform-style:preserve-3d;
+  transition:transform .6s ease;
+}
+
+/* FLAP */
+.flap{
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  height:0;
+  border-left: 150px solid transparent;
+  border-right: 150px solid transparent;
+  border-top: 110px solid #ff4d6d; /* Top color */
+  transform-origin:top;
+  transition:transform 0.6s 0.4s ease, z-index 0.2s 0.4s;
+  z-index:4;
+}
+
+.pocket{
+  position:absolute;
+  bottom:0;
+  left:0;
+  right:0;
+  height:0;
+  border-left: 150px solid transparent;
+  border-right: 150px solid transparent;
+  border-bottom: 110px solid #ff9acb;
+  z-index:3;
+}
+
+.env-bg{
+  position:absolute;
+  inset:0;
+  background:#ffd1e8;
+  border-radius:0 0 5px 5px;
+  box-shadow:0 20px 30px rgba(0,0,0,0.2);
+  z-index:1;
+}
+
+/* LETTER */
+.letter{
+  position:absolute;
+  width: 90%;
+  left:5%;
+  bottom: 0;
+  height: 85%;
+  background:white;
+  border-radius:6px;
+  display:flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align:center;
+  padding:15px;
+  box-shadow: 0 -5px 10px rgba(0,0,0,0.1);
+  transition:transform 0.8s 0.8s ease, opacity 0.4s 1.2s ease;
   z-index:2;
-  border:1px solid rgba(255,255,255,0.45);
 }
 
+.letter p{
+  font-size:16px;
+  color:#5c1737;
+  margin:0;
+  line-height:1.4;
+}
+
+.letter span{
+  display:block;
+  margin-top:8px;
+  font-size:12px;
+  color:#ff4d6d;
+  font-weight:700;
+  text-transform: uppercase;
+}
+
+/* OPEN ANIMATION */
+.envelope.open .flap{
+  transform:rotateX(180deg);
+  z-index:0;
+  transition:transform 0.6s ease, z-index 0.2s;
+}
+
+.envelope.open .letter{
+  transform:translateY(-150px);
+  z-index:5;
+}
+
+/* ================= MAIN CARD ================= */
 .card{
-  opacity:0;
-  transform:scale(0.9);
-  transition:opacity 0.8s ease, transform 0.8s ease;
+  width:min(90vw,500px);
+  background:rgba(255,245,251,0.85);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  padding:30px 20px;
+  border-radius:24px;
+  text-align:center;
+  box-shadow:0 15px 40px rgba(255,0,102,.3);
+  position:relative;
+  z-index:10;
+  display:none; /* Hidden initially */
+  border:1px solid rgba(255,255,255,0.6);
 }
 
-body.show-card .card{
-  opacity:1;
-  transform:scale(1);
+.card.visible{
+  display:block;
+  animation:popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-
-@keyframes pop{
-  from{transform:scale(.9);opacity:0}
-  to{transform:scale(1);opacity:1}
+@keyframes popIn{
+  from{opacity:0; transform:scale(0.8);}
+  to{opacity:1; transform:scale(1);}
 }
 
 .badge{
   background:linear-gradient(135deg,#ffd1e8,#ff7eb3);
-  padding:6px 14px;
-  border-radius:999px;
-  font-size:14px;
+  padding:5px 12px;
+  border-radius:20px;
+  font-size:12px;
+  font-weight:bold;
+  color:#5c1737;
   display:inline-block;
+  margin-bottom:10px;
+  letter-spacing: 0.5px;
 }
 
 h1{
   color:#ff3b78;
-  margin:10px 0;
+  margin:5px 0 15px;
+  font-size: 24px;
 }
 
 #question{
-  font-size:22px;
-  margin:18px 0;
+  font-size:20px;
+  margin:20px 0;
+  min-height: 50px;
+  display:flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btns{
   position:relative;
-  height:64px;
+  min-height:60px;
   display:flex;
   justify-content:center;
-  gap:18px;
+  gap:20px;
+  margin-top: 20px;
 }
 
 button{
   border:none;
-  padding:12px 28px;
+  padding:12px 30px;
   font-size:18px;
-  border-radius:999px;
+  border-radius:50px;
   cursor:pointer;
-  box-shadow:0 8px 18px rgba(255,0,85,.3);
+  font-family:inherit;
+  transition: transform 0.1s;
 }
 
+button:active{ transform:scale(0.95); }
+
 #yesBtn{
-  background:linear-gradient(145deg,#ff9acb,#ff4d6d);
+  background:linear-gradient(145deg,#ff4d6d,#ff2d55);
   color:white;
+  box-shadow:0 5px 15px rgba(255,45,85,0.4);
 }
 
 #noBtn{
   background:white;
   border:2px solid #ff8fb5;
   color:#ff4d6d;
-  position:absolute;
-  right:0;
+  position:absolute; 
+  /* Starts relatively positioned via JS, becomes absolute on hover */
 }
 
 /* TEXT */
 #funny{
-  margin-top:16px;
+  margin-top:20px;
   min-height:24px;
   color:#a0264e;
   font-size:15px;
+  font-style: italic;
 }
 
 .progress{
-  margin-top:6px;
-  font-size:13px;
+  margin-top:10px;
+  font-size:11px;
   color:#8b2f52;
+  opacity: 0.7;
 }
 
-/* ====== YES click: make it feel special ====== */
+/* ANIMATIONS */
 @keyframes heartBeat{
   0%{transform:scale(1)}
-  20%{transform:scale(1.08)}
-  40%{transform:scale(1)}
-  60%{transform:scale(1.12)}
+  25%{transform:scale(1.1)}
+  50%{transform:scale(1)}
+  75%{transform:scale(1.1)}
   100%{transform:scale(1)}
 }
 
 .card.yes-clicked{
-  animation:heartBeat .9s ease;
-  box-shadow:0 0 30px rgba(255,45,85,.6);
+  animation:heartBeat 0.6s ease;
 }
 
 /* FLOATING HEARTS */
 .heart{
   position:fixed;
-  bottom:-20px;
-  animation:floatUp 6s linear forwards;
+  bottom:-30px;
+  animation:floatUp 5s linear forwards;
   pointer-events:none;
+  z-index: 50;
 }
 
 @keyframes floatUp{
-  to{transform:translateY(-110vh) scale(1.6);opacity:0}
+  to{transform:translateY(-110vh) rotate(360deg); opacity:0}
 }
 
-/* ❤️ HEART CENTER */
-.heart-center{
-  position:fixed;
-  inset:0;
-  display:grid;
-  place-items:center;
-  pointer-events:none;
-  z-index:999;
-}
+/* SOUNDS HIDDEN */
+audio{ display:none; }
 
-.heart-shape{
-  width:120px;
-  height:120px;
-  background:#ff2d55;
-  position:relative;
-  transform:rotate(-45deg);
-  animation:beat .8s ease-in-out infinite;
-}
-
-.heart-shape::before,
-.heart-shape::after{
-  content:"";
-  width:120px;
-  height:120px;
-  background:#ff2d55;
-  border-radius:50%;
-  position:absolute;
-}
-
-.heart-shape::before{top:-60px;left:0}
-.heart-shape::after{left:60px;top:0}
-
-@keyframes beat{
-  0%{transform:rotate(-45deg) scale(1)}
-  25%{transform:rotate(-45deg) scale(1.1)}
-  40%{transform:rotate(-45deg) scale(1)}
-  60%{transform:rotate(-45deg) scale(1.15)}
-  100%{transform:rotate(-45deg) scale(1)}
-}
-
-/* 💔 HEART BREAK */
-.heart-break{
-  animation:crack .6s ease forwards;
-}
-
-@keyframes crack{
-  to{transform:rotate(-45deg) scale(0);opacity:0}
-}
 </style>
 </head>
 
 <body>
 
-<!-- ENVELOPE INTRO -->
+<audio id="heartbeat">
+  <source src="https://assets.mixkit.co/sfx/preview/mixkit-heartbeat-206.mp3" type="audio/mpeg">
+</audio>
+<audio id="heartbreak">
+  <source src="https://assets.mixkit.co/sfx/preview/mixkit-glass-break-with-impact-1683.mp3" type="audio/mpeg">
+</audio>
+
 <div id="envelopeScreen">
   <div class="envelope">
-    <div class="env-flap"></div>
-    <div class="env-body"></div>
+    <div class="env-bg"></div>
+    <div class="flap"></div>
+    <div class="pocket"></div>
     <div class="letter">
-      <p>
-        For someone who makes my heart smile 💖
-        <span>Tap to open</span>
-      </p>
+      <p>For someone who makes my heart smile 💖</p>
+      <span>Tap to open</span>
     </div>
   </div>
 </div>
 
-
-
 <div class="card" id="card">
   <div class="badge">Harshu’s Valentine Quest 💘</div>
-  <h1>Chapter 1: The Love Quiz</h1>
-  <div id="question"></div>
+  <h1 id="chapterTitle">Chapter 1: The Love Quiz</h1>
+  
+  <div id="question">Loading...</div>
 
   <div class="btns">
     <button id="yesBtn">YES</button>
@@ -407,45 +341,41 @@ button{
   <div class="progress" id="progress"></div>
 </div>
 
-<!-- HEART LAYER -->
-<div id="heartLayer" class="heart-center" style="display:none;">
-  <div id="heartShape" class="heart-shape"></div>
-</div>
-
-<!-- SOUNDS -->
-<audio id="heartbeat" preload="auto">
-  <source src="https://assets.mixkit.co/sfx/preview/mixkit-heartbeat-206.mp3" type="audio/mpeg">
-</audio>
-<audio id="heartbreak" preload="auto">
-  <source src="https://assets.mixkit.co/sfx/preview/mixkit-glass-break-with-impact-1683.mp3" type="audio/mpeg">
-</audio>
-
 <script>
-
+/* ================= LOGIC ================= */
 const envelope = document.querySelector(".envelope");
 const envelopeScreen = document.getElementById("envelopeScreen");
+const card = document.getElementById("card");
 
+const heartbeat = document.getElementById("heartbeat");
+const heartbreak = document.getElementById("heartbreak");
+
+// Unlock audio context on first interaction
+let audioReady = false;
+document.body.addEventListener('click', () => {
+  if(!audioReady){
+    heartbeat.play().then(()=>{heartbeat.pause(); heartbeat.currentTime=0;});
+    heartbreak.play().then(()=>{heartbreak.pause(); heartbreak.currentTime=0;});
+    audioReady = true;
+  }
+}, {once:true});
+
+// Envelope Click
 envelope.addEventListener("click", () => {
   envelope.classList.add("open");
-
-  // soft romantic vibration
-  if ("vibrate" in navigator) {
-    navigator.vibrate([60, 40, 60]);
-  }
+  
+  // Vibration if supported
+  if(navigator.vibrate) navigator.vibrate([50]);
 
   setTimeout(() => {
     envelopeScreen.style.opacity = "0";
-    document.body.classList.add("show-card");
-  }, 900);
-
-  setTimeout(() => {
-    envelopeScreen.remove();
-  }, 1500);
+    setTimeout(()=>{
+      envelopeScreen.remove();
+      card.classList.add("visible");
+    }, 500);
+  }, 1500); // Wait for letter animation
 });
 
-
-
-/* ===== ORIGINAL CONTENT (questions/yes/no/ending kept) ===== */
 const questions = [
   "Do you love me more than panipuri?",
   "If I were a tiny penguin, would you still pick me up?",
@@ -485,151 +415,100 @@ const noBtn = document.getElementById("noBtn");
 const funny = document.getElementById("funny");
 const progress = document.getElementById("progress");
 
-const heartLayer = document.getElementById("heartLayer");
-const heartShape = document.getElementById("heartShape");
-const heartbeat = document.getElementById("heartbeat");
-const heartbreak = document.getElementById("heartbreak");
-const card = document.getElementById("card");
-
-let audioUnlocked = false;
-
-function unlockAudio(){
-  if(audioUnlocked) return;
-  audioUnlocked = true;
-  [heartbeat, heartbreak].forEach(a=>{
-    if(!a) return;
-    a.muted = true;
-    const p = a.play();
-    if(p && typeof p.then === "function"){
-      p.then(()=>{ a.pause(); a.currentTime = 0; a.muted = false; })
-       .catch(()=>{ a.muted = false; });
-    }
-  });
-}
-document.addEventListener("pointerdown", unlockAudio, {once:true});
-
 function showQ(){
   q.textContent = questions[qIndex];
   progress.textContent = `Question ${qIndex+1} of ${questions.length}`;
   funny.textContent = "";
+  
+  // Reset No Button position
+  noBtn.style.position = "relative";
+  noBtn.style.left = "auto";
+  noBtn.style.top = "auto";
 }
 
-/* ===== Mobile vibration helper (Android works; iPhone may ignore) ===== */
-function vibrate(pattern){
-  if("vibrate" in navigator){
-    navigator.vibrate(pattern);
-  }
-}
-
-function safePlay(audio){
-  if(!audio) return;
-  if(!audio.canPlayType("audio/mpeg")) return;
-  const p = audio.play();
-  if(p && typeof p.catch === "function"){
-    p.catch(()=>{ /* ignore autoplay restrictions */ });
-  }
-}
-
-function showHeartBeat(){
-  heartbeat.currentTime = 0;
-  safePlay(heartbeat);
-  setTimeout(()=>{ heartbeat.pause(); }, 1800);
-}
-
-function showHeartBreak(){
-  heartLayer.style.display="grid";
-  heartShape.classList.add("heart-break");
-  heartbreak.currentTime=0;
-  safePlay(heartbreak);
-  setTimeout(()=>{
-    heartLayer.style.display="none";
-    heartShape.classList.remove("heart-break");
-  },1200);
-}
-
-function spawnHeartsBurst(count=16){
-  for(let i=0;i<count;i++){
-    const h=document.createElement("div");
-    h.className="heart";
-    h.textContent=["💖","💕","💘","❤️"][Math.floor(Math.random()*4)];
-    h.style.left=Math.random()*100+"vw";
-    h.style.fontSize=16+Math.random()*26+"px";
+function spawnHearts(count=15){
+  for(let i=0; i<count; i++){
+    const h = document.createElement("div");
+    h.className = "heart";
+    h.textContent = ["💖","💕","💘","❤️","✨"][Math.floor(Math.random()*5)];
+    h.style.left = Math.random()*100 + "vw";
+    h.style.fontSize = (15 + Math.random()*30) + "px";
+    h.style.animationDuration = (3 + Math.random()*3) + "s";
     document.body.appendChild(h);
-    setTimeout(()=>h.remove(),6000);
+    setTimeout(()=>h.remove(), 6000);
   }
-}
-
-function startHearts(){
-  setInterval(()=>{
-    const h=document.createElement("div");
-    h.className="heart";
-    h.textContent=["💖","💕","💘","❤️"][Math.floor(Math.random()*4)];
-    h.style.left=Math.random()*100+"vw";
-    h.style.fontSize=16+Math.random()*26+"px";
-    document.body.appendChild(h);
-    setTimeout(()=>h.remove(),6000);
-  },220);
 }
 
 function moveNo(){
-  noCount++;
+  if(noCount === 0){
+    // First time moving, switch to absolute
+    noBtn.style.position = "absolute";
+  }
+  
   const rect = card.getBoundingClientRect();
-  noBtn.style.left = Math.random()*(rect.width-90)+"px";
-  noBtn.style.top = Math.random()*(rect.height-120)+"px";
+  const btnRect = noBtn.getBoundingClientRect();
+  
+  // Calculate safe area within card
+  const maxLeft = rect.width - btnRect.width - 20;
+  const maxTop = rect.height - btnRect.height - 20;
+  
+  noBtn.style.left = Math.max(10, Math.random() * maxLeft) + "px";
+  noBtn.style.top = Math.max(10, Math.random() * maxTop) + "px";
+  
   funny.textContent = noLines[Math.floor(Math.random()*noLines.length)];
+  noCount++;
+  
+  if(navigator.vibrate) navigator.vibrate([30]);
 
-  // Optional: tiny vibration on NO attempt (feel free to remove)
-  vibrate([40]);
-
-  if(noCount >= 5){
-    showHeartBreak();
+  if(noCount > 5){
     funny.textContent = "💔 Okay… I can’t say NO anymore.";
-    noBtn.style.display="none";
+    noBtn.style.display = "none";
+    heartbreak.currentTime = 0;
+    heartbreak.play().catch(()=>{});
   }
 }
 
-/* ===== YES CLICK (enhanced: heartbeat + burst + bg zoom + vibration) ===== */
-yesBtn.onclick = ()=>{
-  // Heartbeat-style vibration
-  vibrate([120,60,120,60,180]);
-
-  // Make click feel special
+yesBtn.addEventListener("click", () => {
+  if(navigator.vibrate) navigator.vibrate([100,50,100]);
+  
   card.classList.add("yes-clicked");
-  document.body.classList.add("yes-bg");
-  spawnHeartsBurst(18);
+  setTimeout(()=>card.classList.remove("yes-clicked"), 500);
 
-  showHeartBeat();
+  spawnHearts(20);
+  heartbeat.currentTime = 0;
+  heartbeat.play().catch(()=>{});
+  
   funny.textContent = yesLines[qIndex];
-
-  if(qIndex < questions.length-1){
+  
+  if(qIndex < questions.length - 1){
     qIndex++;
-    setTimeout(()=>{
-      card.classList.remove("yes-clicked");
-      document.body.classList.remove("yes-bg");
-      showQ();
-    }, 800);
+    setTimeout(showQ, 1000);
   } else {
-    // Keep your original ending (exact content)
-    card.innerHTML = `
-      <h1 style="font-size:34px;color:#ff2d55">YAYYYY 💘</h1>
-      <p style="font-size:20px">
-        Harshu ❤️<br/><br/>
-        From silly questions to real feelings,<br/>
-        it’s always you.<br/><br/>
-        Today. Tomorrow.<br/>
-        And every Valentine after this.
-      </p>
-    `;
-    startHearts();
+    finishGame();
   }
-};
+});
 
-noBtn.onmouseenter = moveNo;
-noBtn.onclick = moveNo;
-noBtn.ontouchstart = e=>{ e.preventDefault(); moveNo(); };
+noBtn.addEventListener("mouseover", moveNo);
+noBtn.addEventListener("touchstart", (e) => { e.preventDefault(); moveNo(); });
+
+function finishGame(){
+  card.innerHTML = `
+    <h1 style="font-size:32px;color:#ff2d55;margin-bottom:20px;">YAYYYY 💘</h1>
+    <p style="font-size:18px; line-height:1.6; color:#5c1737;">
+      <strong>Harshu ❤️</strong><br/><br/>
+      From silly questions to real feelings,<br/>
+      it’s always you.<br/><br/>
+      Today. Tomorrow.<br/>
+      And every Valentine after this.
+    </p>
+    <div style="margin-top:30px; font-size:40px;">💑</div>
+  `;
+  
+  setInterval(() => spawnHearts(3), 300);
+}
 
 showQ();
-</script>
 
+</script>
 </body>
 </html>
