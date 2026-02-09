@@ -185,6 +185,27 @@ body.yes-bg::before{
   border:1px solid rgba(255,255,255,0.6);
 }
 
+.card::before,
+.card::after{
+  content:"";
+  position:absolute;
+  inset:-6px;
+  border-radius:28px;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255,255,255,0.7), transparent 40%),
+    radial-gradient(circle at 80% 20%, rgba(255,255,255,0.6), transparent 35%),
+    radial-gradient(circle at 30% 80%, rgba(255,255,255,0.7), transparent 40%),
+    linear-gradient(135deg, rgba(255,255,255,0.6), rgba(255,143,181,0.25));
+  z-index:-1;
+  filter:blur(2px);
+}
+
+.card::after{
+  inset:-12px;
+  opacity:0.35;
+  filter:blur(8px);
+}
+
 .card.visible{
   display:block;
   animation:popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -221,6 +242,31 @@ h1{
   align-items: center;
   justify-content: center;
 }
+
+.cute-single{
+  width:100%;
+  display:flex;
+  justify-content:center;
+  margin:12px 0 6px;
+}
+
+.cute-sticker{
+  width:68px;
+  height:68px;
+  object-fit:contain;
+  border-radius:18px;
+  padding:6px;
+  background:rgba(255,255,255,0.8);
+  box-shadow:0 8px 16px rgba(255,45,85,0.18);
+  border:1px solid rgba(255,143,181,0.35);
+  transform:rotate(var(--tilt, -3deg)) scale(var(--sticker-scale, 1));
+  transition:transform 0.2s ease;
+}
+
+.cute-sticker:hover{
+  transform:rotate(0deg) scale(1.06);
+}
+
 
 .btns{
   position:relative;
@@ -299,6 +345,15 @@ button:active{ transform:scale(0.95); }
   to{transform:translateY(-110vh) rotate(360deg); opacity:0}
 }
 
+/* FLOATING SPARKLES */
+.sparkle{
+  position:fixed;
+  top:110vh;
+  animation:floatUp 6s linear forwards;
+  pointer-events:none;
+  z-index:40;
+}
+
 /* SOUNDS HIDDEN */
 audio{ display:none; }
 
@@ -330,6 +385,10 @@ audio{ display:none; }
   <div class="badge">Harshu’s Valentine Quest 💘</div>
   <h1 id="chapterTitle">Chapter 1: The Love Quiz</h1>
   
+  <div class="cute-single" aria-label="Cute bear">
+    <img class="cute-sticker" id="cuteSticker" src="bear-1.webp" alt="cute bear"/>
+  </div>
+
   <div id="question">Loading...</div>
 
   <div class="btns">
@@ -340,7 +399,6 @@ audio{ display:none; }
   <div id="funny"></div>
   <div class="progress" id="progress"></div>
 </div>
-
 <script>
 /* ================= LOGIC ================= */
 const envelope = document.querySelector(".envelope");
@@ -348,14 +406,14 @@ const envelopeScreen = document.getElementById("envelopeScreen");
 const card = document.getElementById("card");
 
 const heartbeat = document.getElementById("heartbeat");
-const heartbreak = document.getElementById("heartbreak");
+const heartbreak = document.getElementById("heartbreak"); // Kept just in case, though unused for hiding now
 
 // Unlock audio context on first interaction
 let audioReady = false;
 document.body.addEventListener('click', () => {
   if(!audioReady){
-    heartbeat.play().then(()=>{heartbeat.pause(); heartbeat.currentTime=0;});
-    heartbreak.play().then(()=>{heartbreak.pause(); heartbreak.currentTime=0;});
+    if(heartbeat) heartbeat.play().then(()=>{heartbeat.pause(); heartbeat.currentTime=0;}).catch(()=>{});
+    if(heartbreak) heartbreak.play().then(()=>{heartbreak.pause(); heartbreak.currentTime=0;}).catch(()=>{});
     audioReady = true;
   }
 }, {once:true});
@@ -363,8 +421,6 @@ document.body.addEventListener('click', () => {
 // Envelope Click
 envelope.addEventListener("click", () => {
   envelope.classList.add("open");
-  
-  // Vibration if supported
   if(navigator.vibrate) navigator.vibrate([50]);
 
   setTimeout(() => {
@@ -373,7 +429,7 @@ envelope.addEventListener("click", () => {
       envelopeScreen.remove();
       card.classList.add("visible");
     }, 500);
-  }, 1500); // Wait for letter animation
+  }, 1500);
 });
 
 const questions = [
@@ -385,6 +441,14 @@ const questions = [
   "Will you steal my hoodie and deny it?",
   "If I say ‘I love you’, do I get a smile?",
   "Will you be my Valentine? 💖"
+];
+
+const stickerImages = [
+  {src:"bear-1.webp", alt:"cute bear waving"},
+  {src:"bear-2.webp", alt:"bear hug"},
+  {src:"bear-3.webp", alt:"panda stacking jars"},
+  {src:"bear-4.webp", alt:"panda with sunglasses"},
+  {src:"bear-5.webp", alt:"panda kiss"}
 ];
 
 const yesLines = [
@@ -403,7 +467,10 @@ const noLines = [
   "That was close!",
   "It tried escaping!",
   "Still no? 😳",
-  "This hurts…"
+  "Nice try!",
+  "Too slow!",
+  "You can't catch me!",
+  "Just click YES!"
 ];
 
 let qIndex = 0;
@@ -414,14 +481,26 @@ const yesBtn = document.getElementById("yesBtn");
 const noBtn = document.getElementById("noBtn");
 const funny = document.getElementById("funny");
 const progress = document.getElementById("progress");
+const cuteSticker = document.getElementById("cuteSticker");
 
 function showQ(){
   q.textContent = questions[qIndex];
   progress.textContent = `Question ${qIndex+1} of ${questions.length}`;
   funny.textContent = "";
+
+  const sticker = stickerImages[qIndex % stickerImages.length];
+  if(cuteSticker && sticker){
+    cuteSticker.src = sticker.src;
+    cuteSticker.alt = sticker.alt;
+  }
+
+  const grow = 1 + (qIndex * 0.08);
+  yesBtn.style.transform = `scale(${grow})`;
   
-  // Reset No Button position
-  noBtn.style.position = "relative";
+  // RESET logic for every question
+  noCount = 0; 
+  noBtn.style.display = "block"; // Ensure it's always visible
+  noBtn.style.position = "relative"; // Put it back in line
   noBtn.style.left = "auto";
   noBtn.style.top = "auto";
 }
@@ -439,33 +518,39 @@ function spawnHearts(count=15){
   }
 }
 
+function spawnSparkles(count=10){
+  for(let i=0; i<count; i++){
+    const s = document.createElement("div");
+    s.className = "sparkle";
+    s.textContent = ["✨","💫","⭐"][Math.floor(Math.random()*3)];
+    s.style.left = Math.random()*100 + "vw";
+    s.style.fontSize = (12 + Math.random()*18) + "px";
+    s.style.animationDuration = (4 + Math.random()*3) + "s";
+    document.body.appendChild(s);
+    setTimeout(()=>s.remove(), 7000);
+  }
+}
+
 function moveNo(){
-  if(noCount === 0){
-    // First time moving, switch to absolute
+  // First movement switches to absolute positioning
+  if(noBtn.style.position !== "absolute"){
     noBtn.style.position = "absolute";
   }
   
   const rect = card.getBoundingClientRect();
   const btnRect = noBtn.getBoundingClientRect();
   
-  // Calculate safe area within card
+  // Calculate safe area within card so it doesn't fly off screen
   const maxLeft = rect.width - btnRect.width - 20;
   const maxTop = rect.height - btnRect.height - 20;
   
   noBtn.style.left = Math.max(10, Math.random() * maxLeft) + "px";
   noBtn.style.top = Math.max(10, Math.random() * maxTop) + "px";
   
+  // Pick a random funny line
   funny.textContent = noLines[Math.floor(Math.random()*noLines.length)];
-  noCount++;
   
   if(navigator.vibrate) navigator.vibrate([30]);
-
-  if(noCount > 5){
-    funny.textContent = "💔 Okay… I can’t say NO anymore.";
-    noBtn.style.display = "none";
-    heartbreak.currentTime = 0;
-    heartbreak.play().catch(()=>{});
-  }
 }
 
 yesBtn.addEventListener("click", () => {
@@ -475,8 +560,8 @@ yesBtn.addEventListener("click", () => {
   setTimeout(()=>card.classList.remove("yes-clicked"), 500);
 
   spawnHearts(20);
-  heartbeat.currentTime = 0;
-  heartbeat.play().catch(()=>{});
+  spawnSparkles(8);
+  if(heartbeat) { heartbeat.currentTime = 0; heartbeat.play().catch(()=>{}); }
   
   funny.textContent = yesLines[qIndex];
   
@@ -488,8 +573,12 @@ yesBtn.addEventListener("click", () => {
   }
 });
 
+// Trigger move on Hover (Desktop) and Touch (Mobile)
 noBtn.addEventListener("mouseover", moveNo);
-noBtn.addEventListener("touchstart", (e) => { e.preventDefault(); moveNo(); });
+noBtn.addEventListener("touchstart", (e) => { 
+  e.preventDefault(); 
+  moveNo(); 
+});
 
 function finishGame(){
   card.innerHTML = `
