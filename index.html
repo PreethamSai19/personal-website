@@ -754,6 +754,7 @@ const envelope = document.querySelector(".envelope");
 const envelopeScreen = document.getElementById("envelopeScreen");
 const card = document.getElementById("card");
 const pullHint = document.querySelector(".pull-hint");
+const REPORT_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbz5apBvDOx_LKong3kCHxOwaSnVoGWKau9ymNo-1Z0C3DsZ4Pj9tUXbI4zfwcUcsStO/exec"; // Paste your Google Apps Script Web App URL here
 const bgSlides = document.querySelectorAll(".bg-slide");
 const bgImages = [
   { src: "WhatsApp Image 2026-02-09 at 23.10.41.jpeg", pos: "50% 24%" },
@@ -1076,6 +1077,33 @@ function downloadAnswersReport(reportText){
   URL.revokeObjectURL(url);
 }
 
+function buildAnswersPayload(reportText){
+  return {
+    source: "valentine-quest",
+    generated_at: new Date().toISOString(),
+    report_text: reportText,
+    questions: questions.map((item, index) => ({
+      index: index + 1,
+      type: item.type,
+      question: item.text,
+      answer: answersReport[index] || "",
+    })),
+  };
+}
+
+function sendAnswersToWebhook(reportText){
+  if (!REPORT_WEBHOOK_URL) return Promise.resolve({ skipped: true });
+  const payload = buildAnswersPayload(reportText);
+
+  // no-cors avoids frontend CORS issues with simple script webhooks.
+  return fetch(REPORT_WEBHOOK_URL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+}
+
 yesBtn.addEventListener("click", () => {
   const current = questions[qIndex];
   if (!current || current.type !== "yesno") return;
@@ -1179,12 +1207,21 @@ function finishGame(){
       Happy Valentine’s Day, Kannamaaa❤️!
     </p>
     <div style="margin-top:30px; font-size:40px;">💑</div>
+    <p id="reportSyncStatus" style="margin-top:8px;font-size:13px;color:#8b2f52;">
+      ${REPORT_WEBHOOK_URL ? "Sending answers to mailbox..." : "Webhook not configured yet"}
+    </p>
     <button id="downloadReportBtn" type="button" style="margin-top:10px;">Download Report Again</button>
   `;
 
   const downloadReportBtn = document.getElementById("downloadReportBtn");
+  const reportSyncStatus = document.getElementById("reportSyncStatus");
   if (downloadReportBtn){
     downloadReportBtn.addEventListener("click", () => downloadAnswersReport(reportText));
+  }
+  if (reportSyncStatus && REPORT_WEBHOOK_URL){
+    sendAnswersToWebhook(reportText)
+      .then(() => { reportSyncStatus.textContent = "Answers sent to mailbox ✅"; })
+      .catch(() => { reportSyncStatus.textContent = "Could not send automatically. Use downloaded report."; });
   }
   
   startFinaleHearts();
