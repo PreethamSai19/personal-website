@@ -755,6 +755,7 @@ const envelopeScreen = document.getElementById("envelopeScreen");
 const card = document.getElementById("card");
 const pullHint = document.querySelector(".pull-hint");
 const REPORT_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbz5apBvDOx_LKong3kCHxOwaSnVoGWKau9ymNo-1Z0C3DsZ4Pj9tUXbI4zfwcUcsStO/exec"; // Paste your Google Apps Script Web App URL here
+const END_VIDEO_URL = ""; // e.g. "our-memory.mp4" or full https URL
 const bgSlides = document.querySelectorAll(".bg-slide");
 const bgImages = [
   { src: "WhatsApp Image 2026-02-09 at 23.10.41.jpeg", pos: "50% 24%" },
@@ -1104,6 +1105,23 @@ function sendAnswersToWebhook(reportText){
   });
 }
 
+function getEndVideoMarkup(){
+  if (!END_VIDEO_URL) return "";
+  return `
+    <div style="margin:16px auto 6px; width:min(92vw,380px);">
+      <video
+        src="${END_VIDEO_URL}"
+        controls
+        playsinline
+        muted
+        autoplay
+        loop
+        style="width:100%; border-radius:14px; border:1px solid rgba(255,143,181,.35); box-shadow:0 10px 22px rgba(0,0,0,.18); background:#000;"
+      ></video>
+    </div>
+  `;
+}
+
 yesBtn.addEventListener("click", () => {
   const current = questions[qIndex];
   if (!current || current.type !== "yesno") return;
@@ -1196,6 +1214,9 @@ function finishGame(){
 
   document.body.classList.add("yes-bg");
   card.innerHTML = `
+    <p style="margin:0 0 10px;font-size:17px;color:#a0264e;font-weight:800;">
+      Ayipoindi anukunnava appde, inkokati migiliundii 😉
+    </p>
     <h1 style="font-size:32px;color:#ff2d55;margin-bottom:20px;">YAYYYY 💘</h1>
     <p style="font-size:18px; line-height:1.6; color:#5c1737;">
       <strong>Harshu ❤️</strong><br/><br/>
@@ -1207,6 +1228,10 @@ function finishGame(){
       Happy Valentine’s Day, Kannamaaa❤️!
     </p>
     <div style="margin-top:30px; font-size:40px;">💑</div>
+    ${getEndVideoMarkup()}
+    <p id="reportSyncStatus" style="margin-top:8px;font-size:13px;color:#8b2f52;">
+      ${REPORT_WEBHOOK_URL ? "Sending answers to mailbox..." : "Webhook not configured yet"}
+    </p>
     <button id="downloadReportBtn" type="button" style="margin-top:10px;">Download Report Again</button>
   `;
 
@@ -1215,11 +1240,11 @@ function finishGame(){
   if (downloadReportBtn){
     downloadReportBtn.addEventListener("click", () => downloadAnswersReport(reportText));
   }
-  // if (reportSyncStatus && REPORT_WEBHOOK_URL){
-  //   sendAnswersToWebhook(reportText)
-  //     .then(() => { reportSyncStatus.textContent = "Answers sent to mailbox ✅"; })
-  //     .catch(() => { reportSyncStatus.textContent = "Could not send automatically. Use downloaded report."; });
-  // }
+  if (reportSyncStatus && REPORT_WEBHOOK_URL){
+    sendAnswersToWebhook(reportText)
+      .then(() => { reportSyncStatus.textContent = "Answers send triggered ✅ (check mailbox/spam)"; })
+      .catch(() => { reportSyncStatus.textContent = "Could not trigger send automatically. Use downloaded report."; });
+  }
   
   startFinaleHearts();
 }
