@@ -407,6 +407,67 @@ h1{
   justify-content: center;
 }
 
+.desc-wrap{
+  display:none;
+  width:100%;
+  margin-top:8px;
+}
+
+.desc-wrap.visible{
+  display:block;
+}
+
+#descHint{
+  margin-top:8px;
+  font-size:13px;
+  color:#8b2f52;
+  min-height:20px;
+}
+
+.desc-meter{
+  width:100%;
+  height:10px;
+  border-radius:999px;
+  background:rgba(255,143,181,0.25);
+  overflow:hidden;
+  margin-top:6px;
+}
+
+.desc-meter-fill{
+  height:100%;
+  width:0%;
+  border-radius:999px;
+  background:linear-gradient(90deg,#ff9acb,#ff4d6d);
+  transition:width 0.22s ease;
+}
+
+#descInput{
+  width:100%;
+  min-height:96px;
+  resize:vertical;
+  border:1px solid rgba(255,143,181,0.55);
+  border-radius:14px;
+  padding:12px 14px;
+  font-family:inherit;
+  font-size:15px;
+  line-height:1.35;
+  color:#5c1737;
+  background:rgba(255,255,255,0.92);
+  outline:none;
+}
+
+#descInput:focus{
+  border-color:#ff4d6d;
+  box-shadow:0 0 0 3px rgba(255,77,109,0.16);
+}
+
+#descNextBtn{
+  margin-top:10px;
+  background:linear-gradient(145deg,#ff4d6d,#ff2d55);
+  color:#fff;
+  box-shadow:0 5px 15px rgba(255,45,85,0.35);
+}
+
 .cute-single{
   width:100%;
   display:flex;
@@ -602,6 +663,14 @@ audio{ display:none; }
   </div>
 
   <div id="question">Loading...</div>
+  <div class="desc-wrap" id="descWrap">
+    <textarea id="descInput" placeholder="Write your answer here..."></textarea>
+    <div class="desc-meter" aria-hidden="true">
+      <div class="desc-meter-fill" id="descMeterFill"></div>
+    </div>
+    <div id="descHint">Let your heart speak in a few words ✨</div>
+    <button id="descNextBtn" type="button">Save & Next</button>
+  </div>
 
   <div class="btns">
     <button id="yesBtn">YES</button>
@@ -784,14 +853,14 @@ envelope.addEventListener("keydown", (event) => {
 });
 
 const questions = [
-  "Do you love me more than panipuri?",
-  "If I were a tiny penguin, would you still pick me up?",
-  "Am I your favorite notification?",
-  "Is your smile my daily sunshine?",
-  "Do we belong together like chai & gossip?",
-  "Will you steal my hoodie and deny it?",
-  "If I say ‘I love you’, do I get a smile?",
-  "Will you be my Valentine? 💖"
+  { type: "yesno", text: "Am I your favorite person to share random daily stories with?" },
+  { type: "yesno", text: "Do you smile at least once a day because of something I say or do?" },
+  { type: "yesno", text: "Do you believe we should always try to solve our misunderstandings before the day ends?" },
+  { type: "yesno", text: "Do you feel safe expressing your real emotions with me, even when we disagree?" },
+  { type: "yesno", text: "Do you believe our relationship grows stronger every time we work through a difficult moment together?" },
+  { type: "descriptive", text: "When you feel upset or overwhelmed, what is the one thing I can do that comforts you the most?" },
+  { type: "descriptive", text: "What is one small thing I can improve so you feel more understood and valued?" },
+  { type: "yesno", text: "No matter how many silly fights or emotional days we have, will you still choose to stay, grow, and create memories with me?" }
 ];
 
 const stickerImages = [
@@ -834,6 +903,37 @@ const btnArea = document.querySelector(".btns");
 const funny = document.getElementById("funny");
 const progress = document.getElementById("progress");
 const cuteSticker = document.getElementById("cuteSticker");
+const descWrap = document.getElementById("descWrap");
+const descInput = document.getElementById("descInput");
+const descNextBtn = document.getElementById("descNextBtn");
+const descHint = document.getElementById("descHint");
+const descMeterFill = document.getElementById("descMeterFill");
+const descriptiveAnswers = {};
+const answersReport = {};
+const MIN_DESC_WORDS = 8;
+
+function countWords(text){
+  const trimmed = text.trim();
+  if (!trimmed) return 0;
+  return trimmed.split(/\s+/).length;
+}
+
+function updateDescriptiveFeedback(){
+  const words = countWords(descInput.value);
+  const pct = Math.min(100, (words / MIN_DESC_WORDS) * 100);
+  if (descMeterFill) descMeterFill.style.width = `${pct}%`;
+
+  if (!descHint) return;
+  if (words === 0){
+    descHint.textContent = `Write at least ${MIN_DESC_WORDS} words to unlock next 💌`;
+    return;
+  }
+  if (words < MIN_DESC_WORDS){
+    descHint.textContent = `${words}/${MIN_DESC_WORDS} words... keep going, your love letter is blooming 🌸`;
+    return;
+  }
+  descHint.textContent = `${words} words — beautiful, this is ready ✨`;
+}
 
 function placeNoAtStart(){
   if (!btnArea) return;
@@ -855,7 +955,8 @@ function placeNoAtStart(){
 }
 
 function showQ(){
-  q.textContent = questions[qIndex];
+  const current = questions[qIndex];
+  q.textContent = current.text;
   progress.textContent = `Question ${qIndex+1} of ${questions.length}`;
   funny.textContent = "";
 
@@ -867,10 +968,19 @@ function showQ(){
 
   const grow = 1 + (qIndex * 0.08);
   yesBtn.style.transform = `scale(${grow})`;
-  
-  // RESET logic for every question
-  noBtn.style.display = "block"; // Ensure it's always visible
-  placeNoAtStart();
+
+  if (current.type === "descriptive"){
+    btnArea.style.display = "none";
+    descWrap.classList.add("visible");
+    descInput.value = descriptiveAnswers[qIndex] || "";
+    updateDescriptiveFeedback();
+    setTimeout(() => descInput.focus(), 50);
+  } else {
+    descWrap.classList.remove("visible");
+    btnArea.style.display = "flex";
+    noBtn.style.display = "block";
+    placeNoAtStart();
+  }
 }
 
 function spawnHearts(count=15){
@@ -900,6 +1010,8 @@ function spawnSparkles(count=10){
 }
 
 function moveNo(){
+  const current = questions[qIndex];
+  if (!current || current.type !== "yesno") return;
   const rect = (noBtn.offsetParent || btnArea).getBoundingClientRect();
   const btnRect = noBtn.getBoundingClientRect();
   const yesRect = yesBtn.getBoundingClientRect();
@@ -933,7 +1045,41 @@ function moveNo(){
   vibratePattern([20,20,20]);
 }
 
+function buildAnswersReportText(){
+  const now = new Date();
+  const lines = [
+    "Valentine Quest Answers Report",
+    "=============================",
+    `Generated: ${now.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })} IST`,
+    "",
+  ];
+
+  questions.forEach((item, index) => {
+    const answer = answersReport[index] || "(No answer captured)";
+    lines.push(`${index + 1}. ${item.text}`);
+    lines.push(`Answer: ${answer}`);
+    lines.push("");
+  });
+
+  return lines.join("\n");
+}
+
+function downloadAnswersReport(reportText){
+  const blob = new Blob([reportText], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "valentine_answers_report.txt";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
 yesBtn.addEventListener("click", () => {
+  const current = questions[qIndex];
+  if (!current || current.type !== "yesno") return;
+  answersReport[qIndex] = "YES";
   vibratePattern([60,30,80]);
   
   card.classList.add("yes-clicked");
@@ -950,6 +1096,41 @@ yesBtn.addEventListener("click", () => {
     setTimeout(showQ, 1000);
   } else {
     finishGame();
+  }
+});
+
+function handleDescriptiveNext(){
+  const current = questions[qIndex];
+  if (!current || current.type !== "descriptive") return;
+
+  const value = descInput.value.trim();
+  const words = countWords(value);
+  if (words < MIN_DESC_WORDS){
+    funny.textContent = `Please write at least ${MIN_DESC_WORDS} words 💌`;
+    vibratePattern([16, 26, 16]);
+    updateDescriptiveFeedback();
+    descInput.focus();
+    return;
+  }
+
+  descriptiveAnswers[qIndex] = value;
+  answersReport[qIndex] = value;
+  funny.textContent = "Saved 💖";
+  vibratePattern([20, 18]);
+
+  if (qIndex < questions.length - 1){
+    qIndex++;
+    setTimeout(showQ, 350);
+  } else {
+    finishGame();
+  }
+}
+
+descNextBtn.addEventListener("click", handleDescriptiveNext);
+descInput.addEventListener("input", updateDescriptiveFeedback);
+descInput.addEventListener("keydown", (event) => {
+  if ((event.metaKey || event.ctrlKey) && event.key === "Enter"){
+    handleDescriptiveNext();
   }
 });
 
@@ -981,6 +1162,10 @@ function startFinaleHearts(){
 }
 
 function finishGame(){
+  const reportText = buildAnswersReportText();
+  localStorage.setItem("valentine_answers_report", reportText);
+  downloadAnswersReport(reportText);
+
   document.body.classList.add("yes-bg");
   card.innerHTML = `
     <h1 style="font-size:32px;color:#ff2d55;margin-bottom:20px;">YAYYYY 💘</h1>
@@ -990,9 +1175,17 @@ function finishGame(){
       it’s always you.<br/><br/>
       Today. Tomorrow.<br/>
       And every Valentine after this.
+      <br/><br/>
+      Happy Valentine’s Day, Kannamaaa❤️!
     </p>
     <div style="margin-top:30px; font-size:40px;">💑</div>
+    <button id="downloadReportBtn" type="button" style="margin-top:10px;">Download Report Again</button>
   `;
+
+  const downloadReportBtn = document.getElementById("downloadReportBtn");
+  if (downloadReportBtn){
+    downloadReportBtn.addEventListener("click", () => downloadAnswersReport(reportText));
+  }
   
   startFinaleHearts();
 }
