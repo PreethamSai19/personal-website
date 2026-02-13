@@ -1207,9 +1207,6 @@ function finishGame(){
       Happy Valentine’s Day, Kannamaaa❤️!
     </p>
     <div style="margin-top:30px; font-size:40px;">💑</div>
-    <p id="reportSyncStatus" style="margin-top:8px;font-size:13px;color:#8b2f52;">
-      ${REPORT_WEBHOOK_URL ? "Sending answers to mailbox..." : "Webhook not configured yet"}
-    </p>
     <button id="downloadReportBtn" type="button" style="margin-top:10px;">Download Report Again</button>
   `;
 
@@ -1218,11 +1215,11 @@ function finishGame(){
   if (downloadReportBtn){
     downloadReportBtn.addEventListener("click", () => downloadAnswersReport(reportText));
   }
-  if (reportSyncStatus && REPORT_WEBHOOK_URL){
-    sendAnswersToWebhook(reportText)
-      .then(() => { reportSyncStatus.textContent = "Answers sent to mailbox ✅"; })
-      .catch(() => { reportSyncStatus.textContent = "Could not send automatically. Use downloaded report."; });
-  }
+  // if (reportSyncStatus && REPORT_WEBHOOK_URL){
+  //   sendAnswersToWebhook(reportText)
+  //     .then(() => { reportSyncStatus.textContent = "Answers sent to mailbox ✅"; })
+  //     .catch(() => { reportSyncStatus.textContent = "Could not send automatically. Use downloaded report."; });
+  // }
   
   startFinaleHearts();
 }
